@@ -3,8 +3,13 @@ import axios from 'axios';
 // Get current active user from localStorage
 const getUserId = () => localStorage.getItem('userId');
 
+let rawUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').trim().replace(/\/+$/, '');
+if (!rawUrl.endsWith('/api')) {
+  rawUrl += '/api';
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+  baseURL: rawUrl
 });
 
 api.interceptors.request.use((config) => {
