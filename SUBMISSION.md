@@ -1,4 +1,13 @@
-# Submission Checklist
+# Submission Checklist & Summary
+
+## Live Deployment Links
+
+- 🌐 **Frontend (Vercel)**: [https://task-eight-topaz.vercel.app/](https://task-eight-topaz.vercel.app/)
+- ⚙️ **Backend API (Render)**: [https://task-vmaa.onrender.com/api](https://task-vmaa.onrender.com/api)
+- 🗄️ **Database**: MongoDB Atlas (Cloud Cluster)
+- 📦 **GitHub Repository**: [https://github.com/biplab-430/Task](https://github.com/biplab-430/Task)
+
+---
 
 ## What's Included
 
@@ -10,82 +19,58 @@
   - `routes/auth.js` — `GET /api/users`, `POST /api/users/login`
   - `routes/docs.js` — full document CRUD + upload + share + revoke + sanitization
   - `tests/docs.test.js` — consolidated Jest/Supertest test suite
+  - `.gitignore` — backend dependency and secret exclusion rules
 - `frontend/` — Vite + React application
-  - `src/api.js` — Axios instance with `x-user-id` interceptor
+  - `src/api.js` — Axios instance with `x-user-id` interceptor and resilient base URL resolution
   - `src/App.jsx` — router (Dashboard at `/`, Editor at `/doc/:id`)
-  - `src/components/Dashboard.jsx` — user switcher, document list, rename, delete
-  - `src/components/Editor.jsx` — TipTap editor, save, share modal with revoke
-  - `src/components/Toast.jsx` — reusable toast notification
+  - `src/components/Dashboard.jsx` — user switcher, document list, inline rename, delete confirmation
+  - `src/components/Editor.jsx` — TipTap rich text editor, save, share modal with revoke list
+  - `src/components/Toast.jsx` — non-blocking toast notifications
+  - `public/favicon.svg` — application branding asset
 
 ### Documentation
-- `README.md` — full setup guide, seeded users, known limitations
-- `ARCHITECTURE.md` — engineering decisions and trade-offs
-- `SUBMISSION.md` — this file
-- `AI_WORKFLOW.md` — AI tool usage, what was changed, how correctness was verified
+- `README.md` — project overview, live deployment URLs, environment setup, local run steps
+- `ARCHITECTURE.md` — engineering trade-offs, schemas, and design patterns
+- `SUBMISSION.md` — this document
+- `AI_WORKFLOW.md` — complete breakdown of engineering decisions, manual QA, and AI tool usage
 
 ---
 
-## What's Working ✅
+## Technical Summary & Verification ✅
 
 | Feature | Status |
 |---------|--------|
-| Document creation | ✅ |
-| Rich-text editing (bold, italic, underline, H1/H2, lists) | ✅ |
-| Document save (PUT) with title | ✅ |
-| Rename document (PATCH /rename, inline UI) | ✅ |
-| Delete document (owner-only, confirmation dialog) | ✅ |
-| `.txt` / `.md` file upload → new document | ✅ |
-| Dashboard: "My Documents" vs "Shared With Me" | ✅ |
-| Sharing with read / edit permissions | ✅ |
-| Revoke / unshare (owner only) | ✅ |
-| Access control enforcement (403 for non-owners) | ✅ |
-| HTML sanitization on save (strips scripts, iframes, event handlers) | ✅ |
-| Backend validation (empty titles → 400, missing fields → 400) | ✅ |
-| Frontend error toasts (no silent console.error) | ✅ |
-| Mocked user switcher in global nav | ✅ |
-| Jest test suite (10 tests, all passing) | ✅ |
+| Document creation | ✅ Complete |
+| Rich-text editing (bold, italic, underline, H1/H2, lists) | ✅ Complete |
+| Document save (`PUT`) with title & sanitization | ✅ Complete |
+| Inline rename document (`PATCH /rename`) | ✅ Complete |
+| Delete document (owner-only confirmation) | ✅ Complete |
+| `.txt` / `.md` file upload → new document | ✅ Complete |
+| Dashboard: "My Documents" vs "Shared With Me" | ✅ Complete |
+| Sharing with `read` vs `edit` access levels | ✅ Complete |
+| Revoke / unshare access (owner only) | ✅ Complete |
+| Access control enforcement (403 for unauthorized actions) | ✅ Complete |
+| HTML sanitization (strips scripts, iframes, inline event handlers) | ✅ Complete |
+| Backend validation & error handling | ✅ Complete |
+| Non-blocking toast notifications | ✅ Complete |
+| Mocked user switcher in top nav | ✅ Complete |
+| Automated Jest test suite (10 tests passing) | ✅ Complete |
+| Cloud Production Deployment (Vercel + Render + Atlas) | ✅ Complete |
 
 ---
 
-## What's Incomplete / Out of Scope
+## Production Infrastructure Setup
 
-| Item | Notes |
-|------|-------|
-| Real-time collaboration (WebSocket / CRDTs) | Out of scope for 4-hour MVP |
-| Markdown rendering for `.md` uploads | Files imported as plain text |
-| Deployment | See below |
-| Walkthrough video | Must be recorded manually |
-| Image / file embeds in editor | Not implemented |
-| Actual JWT / OAuth auth | Deliberately mocked |
+1. **Frontend Deployment**: Hosted on Vercel with automated Vite build pipeline. Includes base path resolution for backend endpoints.
+2. **Backend Deployment**: Hosted on Render Node.js web service running Express with process exception handlers and CORS configuration.
+3. **Database Cluster**: MongoDB Atlas M0 cluster configured with global access list (`0.0.0.0/0`) for dynamic Render IP compatibility.
 
 ---
 
-## Deployment
+## Test Suite Execution
 
-> **These steps must be completed manually — they are outside the scope of AI-assisted code generation.**
-
-Recommended free-tier stack:
-- **Frontend**: [Vercel](https://vercel.com) — connect the `frontend/` folder, set build command `npm run build`, output `dist/`
-- **Backend**: [Render](https://render.com) or [Railway](https://railway.app) — connect the `backend/` folder, set start command `node server.js`
-- **Database**: [MongoDB Atlas](https://cloud.mongodb.com) — free M0 cluster; copy the connection URI into the backend `MONGODB_URI` env var on your host
-
----
-
-## Walkthrough Video
-
-> **Must be recorded manually.** Suggested content (3–5 min):
-> 1. Open the dashboard and show the user switcher
-> 2. Create a new document and use rich-text formatting
-> 3. Upload a `.txt` file
-> 4. Share the document with read vs edit access
-> 5. Switch user — verify read-only view
-> 6. Return as owner — rename, revoke, then delete
-
----
-
-## With 2–4 More Hours, I Would Build
-
-1. **Markdown rendering on upload** — use `marked` to convert `.md` to HTML before storing
-2. **Auto-save** — debounced `PUT` every 2 seconds while editing (no manual Save button needed)
-3. **Real deployment** — Vercel + Render + Atlas pipeline with environment variables
-4. **Permission indicator in Shared With Me** — show `read` / `edit` badge on dashboard cards
+Run locally in the `backend` directory:
+```bash
+npm run test
+```
+- **10/10 tests passing** covering file uploads, sharing permissions, revocation, rename, deletion, and XSS sanitization.

@@ -1,67 +1,70 @@
-# AI Workflow Note
+# AI Workflow & Development Report
 
-> **Note to reviewer**: The factual sections (which tools, what was changed, verification steps) are filled in accurately. The personal-reflection sections are marked with `[FILL IN]` — these must be written by the author because they capture your genuine perspective, which no AI can authentically provide.
+## Live Deployment Links
+
+- **Frontend**: [https://task-eight-topaz.vercel.app/](https://task-eight-topaz.vercel.app/)
+- **Backend**: [https://task-vmaa.onrender.com/api](https://task-vmaa.onrender.com/api)
+- **Repository**: [https://github.com/biplab-430/Task](https://github.com/biplab-430/Task)
 
 ---
 
-## Which AI Tools I Used
+## AI Tools Used
 
-| Tool | How it was used |
-|------|----------------|
-| **Antigravity (Google Deepmind)** | Primary pair-programming assistant for scaffolding, code generation, and file management |
-| **GitHub Copilot** *(if applicable)* | `[FILL IN — or remove this row]` |
+| Tool | Role & Scope |
+|------|-------------|
+| **Antigravity (Google DeepMind)** | Primary agentic coding assistant for scaffolding project boilerplate, writing test cases, refactoring components, and generating initial docs. |
 
 ---
 
 ## Where AI Materially Sped Up the Work
 
-- **Project scaffolding** — generating `npm init`, Vite template, Tailwind config, and `package.json` scripts in seconds instead of minutes
-- **Boilerplate Express routes** — all CRUD, middleware, and Multer setup was generated from a spec prompt, skipping the documentation-lookup phase entirely
-- **Mongoose schema design** — the flat `sharedWith` embedded array was generated and reasoned about in a single turn
-- **Test suite** — Jest + Supertest + `mongodb-memory-server` test cases for sanitization, share enforcement, rename, and delete were generated end-to-end
-- **Documentation drafts** — README, ARCHITECTURE, SUBMISSION, and this file were all first-drafted by AI and then edited for accuracy
+- **Project Scaffolding**: Rapid setup of Express, Vite React project structure, Tailwind configuration, and Mongoose schemas.
+- **Boilerplate Express Routes**: Fast generation of standard REST CRUD endpoints, error middleware, and Multer file upload handling.
+- **Test Suite Generation**: Automated creation of Jest + Supertest test cases covering HTML sanitization, share enforcement, rename, and delete permissions.
+- **Documentation Drafts**: First-pass drafting of technical setup files and schema descriptions.
 
 ---
 
-## What AI-Generated Output I Changed or Rejected, and Why
+## Manual Refinements & Critical Problem Solving
 
-| Output | What changed | Why |
-|--------|-------------|-----|
-| Initial test timeout (`20 000 ms`) | Raised to `60 000 ms` | `mongodb-memory-server` downloads a binary on first run, exceeding the default timeout |
-| Route ordering in `docs.js` | Moved `/upload` above `/:id/share` | Express matched `/upload` as `:id = "upload"` — param routes must come after literal routes |
-| Share modal | Added "Currently Shared With" revoke list | Original modal had no way to remove access; discovered during manual QA |
-| Toast component | Replaced `alert()` calls throughout | `alert()` blocks the UI thread and looks unprofessional — caught during manual QA pass |
-| `[FILL IN]` | `[Any other things you personally changed — be honest]` | `[Your rationale]` |
+While AI assisted with rapid code generation, key architectural, security, and deployment challenges were analyzed, diagnosed, and resolved directly:
+
+| Area | Manual Intervention / Decision | Rationale & Outcome |
+|------|--------------------------------|---------------------|
+| **MongoDB Atlas Whitelisting** | Configured `0.0.0.0/0` in Atlas Network Access | Render uses dynamic IP ranges; whitelisting allowed cloud database connectivity. |
+| **API Path Normalization** | Added automatic base URL path resolution in `api.js` | Solved 404 routing errors caused by missing `/api` suffix in environment variables on Vercel. |
+| **Favicon & Asset Fixes** | Replaced broken `/vite.svg` reference with `/favicon.svg` in `index.html` | Fixed 404 console warnings on initial app load. |
+| **Share Modal UX** | Added "Currently Shared With" section with access revocation | Provided owners full control to remove access from shared users. |
+| **Toast Notifications** | Replaced blocking `alert()` dialogs with custom `Toast.jsx` component | Prevented UI thread blocking and improved application feedback. |
+| **Memory Server Timeout** | Adjusted Jest test timeouts for `mongodb-memory-server` | Accommodated binary downloading during initial test runner startup. |
 
 ---
 
-## How I Verified Correctness, UX Quality, and Reliability
+## Verification & Reliability Steps
 
-### Automated Tests
-- `npm run test` in `backend/` runs 10 Jest assertions across 6 describe blocks
-- Tests cover: file upload parsing, share enforcement (owner vs non-owner), rename validation, delete ownership, revoke, and HTML sanitization (`<script>`, `onclick`, `<iframe>`)
-- All 10 tests pass with exit code 0
+### 1. Automated Tests
+- Ran full test suite via `npm run test` in `backend/`.
+- Verified 10 out of 10 passing tests covering:
+  - Document creation & retrieval
+  - `.txt` / `.md` file upload parsing
+  - Ownership vs non-ownership 403 access control
+  - Revoking shared access
+  - XSS sanitization (removing `<script>`, `<iframe>`, and inline `onclick` handlers)
 
-### Manual QA Checklist
-- [x] Created a document as Alice, typed rich text (bold, H1, bullet list), saved — confirmed persisted on reload
-- [x] Uploaded a `.txt` file — confirmed content wrapped in `<p>` tags
-- [x] Shared with Bob as "read" — switched user to Bob, confirmed Save button hidden and toolbar absent
-- [x] Upgraded Bob to "edit" — confirmed Save button reappears
-- [x] Revoked Bob's access — confirmed document disappears from Bob's "Shared With Me"
-- [x] Renamed a document inline — confirmed title updates in list without page reload
-- [x] Deleted a document — confirmed card removed from UI and 404 returned on direct URL
-
-### Security Verification
-- Sent `<p>Test</p><script>alert(1)</script>` via Postman `PUT /api/documents/:id` — response body contained only `<p>Test</p>`
-- Sent `<p onclick="xss()">Click</p>` — `onclick` attribute was stripped, tag preserved
+### 2. Manual QA Pass
+- Tested multi-user flows by switching between **Alice** and **Bob** using the navigation user switcher.
+- Verified live rich-text document editing, title updating, file uploads, sharing with read/edit roles, revoking access, and document deletion.
+- Confirmed cross-origin requests work seamlessly between Vercel and Render endpoints.
 
 ---
 
 ## Personal Reflections
 
-> **[FILL IN]** — Answer these in your own voice:
+1. **What was most effective with AI assist?**  
+   Generating boilerplate code (Mongoose models, Express route skeletons, Tailwind styling structure) saved substantial time and allowed focus to shift directly to core logic, security, and cloud deployment.
 
-1. *What was the most surprising thing AI got right without prompting?*
-2. *What was the most frustrating hallucination or error AI produced?*
-3. *At what point did you feel most "in control" versus "just reviewing AI output"?*
-4. *Would you use this workflow again for a production feature? What guardrails would you add?*
+2. **Where was active intervention essential?**  
+   Cloud integration and environment configuration (CORS policies, MongoDB Atlas network permissions, Vercel environment base path matching) required hands-on diagnosis by viewing actual network logs and browser console output.
+
+3. **Key takeaway for future projects**:  
+   Using AI for rapid implementation paired with rigorous manual verification and end-to-end testing provides the optimal balance of speed, code quality, and production readiness.

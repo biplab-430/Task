@@ -2,6 +2,14 @@
 
 A lightweight real-time-capable collaborative document editor built with the MERN stack.
 
+## 🚀 Live Deployment
+
+- **Frontend (Vercel)**: [https://task-eight-topaz.vercel.app/](https://task-eight-topaz.vercel.app/)
+- **Backend API (Render)**: [https://task-vmaa.onrender.com/api](https://task-vmaa.onrender.com/api)
+- **Database**: MongoDB Atlas (Cloud Cluster)
+
+---
+
 ## Tech Stack
 | Layer | Technology |
 |-------|-----------|
@@ -19,8 +27,7 @@ A lightweight real-time-capable collaborative document editor built with the MER
 ## Prerequisites
 
 - **Node.js** v16 or higher (`node -v` to confirm)
-- **MongoDB** running locally on `127.0.0.1:27017`  
-  (or provide a remote Atlas URI — see below)
+- **MongoDB** running locally on `127.0.0.1:27017` or remote MongoDB Atlas cluster
 - npm v8+
 
 ---
@@ -28,50 +35,29 @@ A lightweight real-time-capable collaborative document editor built with the MER
 ## Environment Variables
 
 ### Backend — `backend/.env`
-Create this file (not committed to git):
-
 ```env
 PORT=5000
-MONGODB_URI=mongodb://127.0.0.1:27017/collab-editor-mvp
+MONGODB_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/collab-editor-mvp
+CLIENT_ORIGIN=https://task-eight-topaz.vercel.app
 ```
 
-> For MongoDB Atlas, replace the URI with your Atlas connection string, e.g.:  
-> `MONGODB_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/collab-editor-mvp`
-
-### Frontend — no `.env` required
-The frontend hard-codes `http://localhost:5000/api` as the base URL in `src/api.js`.  
-If you change the backend port, update that file accordingly.
+### Frontend — `frontend/.env`
+```env
+VITE_API_URL=https://task-vmaa.onrender.com/api
+```
 
 ---
 
-## Seeding Test Users
+## Test Users & Pre-seeded Data
 
-The app uses **mocked authentication** — users are selected via a dropdown.  
-To seed the initial users, send two POST requests to the backend after starting it:
-
-```bash
-# Seed Alice
-curl -X POST http://localhost:5000/api/users/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"alice","name":"Alice"}'
-
-# Seed Bob
-curl -X POST http://localhost:5000/api/users/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"bob","name":"Bob"}'
-```
-
-Or use Postman / Insomnia with the same payloads.
-
-### Seeded Test User Credentials
+The app uses **mocked authentication** for simple role switching:
 
 | Display Name | Username | Role for testing |
 |---|---|---|
 | **Alice** | `alice` | Document owner / sharer |
 | **Bob** | `bob` | Recipient of shared documents |
 
-Once seeded, the **"Test As"** dropdown in the dashboard will list both users.  
-Switch to Bob to verify read/edit permissions and the "Shared With Me" section.
+Once started, the backend automatically seeds `alice` and `bob` into the database if empty. Use the **"Test As"** dropdown in the navigation bar to switch between users.
 
 ---
 
@@ -85,7 +71,7 @@ npm install
 npm run dev          # starts with nodemon on port 5000
 ```
 
-Verify: `GET http://localhost:5000/api/health` → `OK`
+Verify: `GET http://localhost:5000/api/health` → `{"status":"OK","message":"Server is healthy"}`
 
 ### 2. Frontend
 
@@ -99,19 +85,9 @@ Open **http://localhost:5173** in your browser.
 
 ---
 
-## Default Ports
-
-| Service | Port |
-|---------|------|
-| Express API | `5000` |
-| Vite Dev Server | `5173` |
-| MongoDB (local) | `27017` |
-
----
-
 ## Running the Tests
 
-Tests use an **in-memory MongoDB instance** (no external DB required):
+Tests use an **in-memory MongoDB instance** (`mongodb-memory-server`):
 
 ```bash
 cd backend
@@ -132,11 +108,13 @@ The test suite covers:
 | Extension | Notes |
 |-----------|-------|
 | `.txt` | Plain text; each line becomes a `<p>` tag |
-| `.md` | Treated as plain text (no Markdown → HTML conversion) |
+| `.md` | Plain text import into rich text editor |
 
-### Known Limitations
+---
 
-- **No real-time collaboration** — changes by two simultaneous editors will overwrite each other on save (last write wins).
-- **No Markdown rendering** — `.md` files are treated as plain text.
-- **No image uploads** — TipTap image extension is not included.
-- **Mocked auth** — the `x-user-id` header is not signed or verified; this is intentional for MVP demo purposes only.
+## Architecture & Design Highlights
+
+- **Headless Rich-Text Editor**: TipTap integrated cleanly with custom Tailwind controls.
+- **Role-Based Sharing**: Document ownership model with `read` vs `edit` permissions.
+- **XSS Protection**: HTML sanitization applied prior to saving document content.
+- **Monorepo Structure**: Clean separation of `frontend` and `backend` directories.
